@@ -26,5 +26,6 @@ services:
       MYSQL_HOST: mysql
     volumes:
       - ./webapp/go:/app
-    command: cd /app && go run main.go
+    workspace: /app
+    command: go run main.go
 
