@@ -356,7 +356,7 @@ func main() {
 	mux.HandleFunc(pat.Get("/users/setting"), getIndex)
 	// Assets
 	mux.Handle(pat.Get("/*"), http.FileServer(http.Dir("../public")))
-	log.Fatal(http.ListenAndServe(":8000", mux))
+	log.Fatal(http.ListenAndServe(":8001", mux))
 }
 
 func getSession(r *http.Request) *sessions.Session {
@@ -461,7 +461,7 @@ func postInitialize(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := exec.Command("../sql/init.sh")
+	cmd := exec.Command("docker-compose exec mysql bash /database/init.sh")
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stderr
 	cmd.Run()
