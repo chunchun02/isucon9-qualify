@@ -17,8 +17,6 @@ services:
     volumes:
       - ./docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
       - ./webapp/sql:/database
-    ports:
-      - 3306:3306
   app:
     image: golang:1.14
     environment:
