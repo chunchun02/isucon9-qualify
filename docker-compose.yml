@@ -2,14 +2,14 @@ version: '3'
 services:
   nginx:
     image: nginx:latest
-    container_name: "nginx"
+    container_name: nginx
     ports:
-      - "8000:80"
+      - 8000:80
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
   mysql:
     image: mysql:5.7
-    container_name: "mysql"
+    container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       TZ: 'Asia/Tokyo'
@@ -25,4 +25,6 @@ services:
     environment:
       MYSQL_HOST: mysql
     volumes:
-      - "./webapp/go:/app"
+      - ./webapp/go:/app
+    command: cd /app && go run main.go
+
