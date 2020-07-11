@@ -6,7 +6,7 @@ services:
     ports:
       - 8000:80
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx.conf:/etc/nginx/nginx.conf
   mysql:
     image: mysql:5.7
     container_name: mysql
@@ -17,8 +17,6 @@ services:
     volumes:
       - ./docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
       - ./webapp/sql:/database
-    ports:
-      - 3306:3306
   app:
     image: golang:1.14
     environment:
