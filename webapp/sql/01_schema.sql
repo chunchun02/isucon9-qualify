@@ -32,8 +32,8 @@ CREATE TABLE `items` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX indx_index (`category_id`,`seller_id`, `buyer_id`),
-  INDEX indx_created_at (`created_at`)
-  INDEX idx_seller_id (`seller_id`)
+  INDEX indx_created_at (`created_at`),
+  INDEX idx_seller_id (`seller_id`),
   INDEX idx_buyer_id (`buyer_id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
 
@@ -51,8 +51,8 @@ CREATE TABLE `transaction_evidences` (
   `item_root_category_id` int unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_item_id (`item_id`)
-  INDEX idx_seller_id (`seller_id`)
+  INDEX idx_item_id (`item_id`),
+  INDEX idx_seller_id (`seller_id`),
   INDEX idx_buyer_id (`buyer_id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
 
@@ -70,7 +70,7 @@ CREATE TABLE `shippings` (
   `from_name` varchar(191) NOT NULL,
   `img_binary` mediumblob NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_item_id (`item_id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
 
