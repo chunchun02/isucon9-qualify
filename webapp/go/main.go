@@ -59,9 +59,10 @@ const (
 )
 
 var (
-	templates []byte
-	dbx       *sqlx.DB
-	store     sessions.Store
+	templates  []byte
+	dbx        *sqlx.DB
+	store      sessions.Store
+	categories map[int]Category
 )
 
 type Config struct {
@@ -315,6 +316,7 @@ func main() {
 		log.Fatalf("failed to connect to DB: %s.", err.Error())
 	}
 	defer dbx.Close()
+	categories, _ = getCategoryAll()
 
 	mux := goji.NewMux()
 
@@ -353,7 +355,7 @@ func main() {
 	mux.HandleFunc(pat.Get("/users/setting"), getIndex)
 	// Assets
 	mux.Handle(pat.Get("/*"), http.FileServer(http.Dir("../public")))
-	log.Fatal(http.ListenAndServe(":8001", mux))
+	log.Fatal(http.ListenAndServe(":8000", mux))
 }
 
 func getSession(r *http.Request) *sessions.Session {
@@ -416,6 +418,21 @@ func getCategoryByID(q sqlx.Queryer, categoryID int) (category Category, err err
 	return category, err
 }
 
+func getCategoryAll() (result map[int]Category, err error) {
+	categories := []Category{}
+	var data = make(map[int]Category)
+
+	err = dbx.Select(&categories, "SELECT * FROM `categories`")
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	for _, c := range categories {
+		data[c.ID] = c
+	}
+	return result, err
+}
+
 func getConfigByName(name string) (string, error) {
 	config := Config{}
 	err := dbx.Get(&config, "SELECT * FROM `configs` WHERE `name` = ?", name)
@@ -458,7 +475,7 @@ func postInitialize(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := exec.Command("docker-compose exec mysql bash /database/init.sh")
+	cmd := exec.Command("../sql/init.sh")
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stderr
 	cmd.Run()
@@ -917,8 +934,8 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 			tx.Rollback()
 			return
 		}
-		category, err := getCategoryByID(tx, item.CategoryID)
-		if err != nil {
+		category, ok := categories[item.CategoryID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "category not found")
 			tx.Rollback()
 			return
