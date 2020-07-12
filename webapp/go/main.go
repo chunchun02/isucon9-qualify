@@ -71,6 +71,13 @@ type Config struct {
 	Val  string `json:"val" db:"val"`
 }
 
+var (
+	config = map[string]string{
+		"payment_service_url":  DefaultPaymentServiceURL,
+		"shipment_service_url": DefaultShipmentServiceURL,
+	}
+)
+
 type User struct {
 	ID             int64     `json:"id" db:"id"`
 	AccountName    string    `json:"account_name" db:"account_name"`
@@ -457,16 +464,17 @@ func getCategoryAll() (map[int]Category, error) {
 }
 
 func getConfigByName(name string) (string, error) {
-	config := Config{}
-	err := dbx.Get(&config, "SELECT * FROM `configs` WHERE `name` = ?", name)
-	if err == sql.ErrNoRows {
-		return "", nil
-	}
-	if err != nil {
-		log.Print(err)
-		return "", err
-	}
-	return config.Val, err
+	return config[name], nil
+	// config := Config{}
+	// err := dbx.Get(&config, "SELECT * FROM `configs` WHERE `name` = ?", name)
+	// if err == sql.ErrNoRows {
+	// 	return "", nil
+	// }
+	// if err != nil {
+	// 	log.Print(err)
+	// 	return "", err
+	// }
+	// return config.Val, err
 }
 
 func getPaymentServiceURL() string {
