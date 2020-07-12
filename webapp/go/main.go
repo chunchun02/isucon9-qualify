@@ -63,6 +63,7 @@ var (
 	dbx        *sqlx.DB
 	store      sessions.Store
 	categories map[int]Category
+	users      map[int64]User
 )
 
 type Config struct {
@@ -317,6 +318,7 @@ func main() {
 	}
 	defer dbx.Close()
 	categories, _ = getCategoryAll()
+	users, _ = getUserSimpleAll()
 
 	mux := goji.NewMux()
 
@@ -406,6 +408,19 @@ func getUserSimpleByID(q sqlx.Queryer, userID int64) (userSimple UserSimple, err
 	return userSimple, err
 }
 
+func getUserSimpleAll() (map[int64]User, error) {
+	users := []User{}
+	var data = make(map[int64]User)
+	err := dbx.Select(&users, "SELECT * FROM `users`")
+	if err != nil {
+		return nil, err
+	}
+	for _, c := range users {
+		data[c.ID] = c
+	}
+	return data, err
+}
+
 func getCategoryByID(q sqlx.Queryer, categoryID int) (category Category, err error) {
 	err = sqlx.Get(q, &category, "SELECT * FROM `categories` WHERE `id` = ?", categoryID)
 	if category.ParentID != 0 {
@@ -434,7 +449,7 @@ func getCategoryAll() (map[int]Category, error) {
 	for key, val := range data {
 		if val.ParentID != 0 {
 			val.ParentCategoryName = data[val.ParentID].CategoryName
-			data[key] = va
+			data[key] = val
 		}
 	}
 
@@ -936,12 +951,16 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 
 	itemDetails := []ItemDetail{}
 	for _, item := range items {
-		seller, err := getUserSimpleByID(tx, item.SellerID)
-		if err != nil {
+		seller := UserSimple{}
+		u, ok := users[item.SellerID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			tx.Rollback()
 			return
 		}
+		seller.ID = u.ID
+		seller.AccountName = u.AccountName
+		seller.NumSellItems = u.NumSellItems
 		category, ok := categories[item.CategoryID]
 		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "category not found")
