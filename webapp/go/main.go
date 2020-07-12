@@ -418,19 +418,27 @@ func getCategoryByID(q sqlx.Queryer, categoryID int) (category Category, err err
 	return category, err
 }
 
-func getCategoryAll() (result map[int]Category, err error) {
+func getCategoryAll() (map[int]Category, error) {
 	categories := []Category{}
 	var data = make(map[int]Category)
 
-	err = dbx.Select(&categories, "SELECT * FROM `categories`")
+	err := dbx.Select(&categories, "SELECT * FROM `categories`")
 	if err != nil {
 		log.Print(err)
-		return
+		return nil, err
 	}
 	for _, c := range categories {
 		data[c.ID] = c
 	}
-	return result, err
+
+	for key, val := range data {
+		if val.ParentID != 0 {
+			val.ParentCategoryName = data[val.ParentID].CategoryName
+			data[key] = va
+		}
+	}
+
+	return data, err
 }
 
 func getConfigByName(name string) (string, error) {
