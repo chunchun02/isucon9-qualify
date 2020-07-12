@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -60,7 +59,7 @@ const (
 )
 
 var (
-	templates *template.Template
+	templates []byte
 	dbx       *sqlx.DB
 	store     sessions.Store
 )
@@ -273,9 +272,7 @@ func init() {
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 
-	templates = template.Must(template.ParseFiles(
-		"../public/index.html",
-	))
+	templates, _ = ioutil.ReadFile("../public/index.html")
 }
 
 func main() {
@@ -449,7 +446,7 @@ func getShipmentServiceURL() string {
 }
 
 func getIndex(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "index.html", struct{}{})
+	w.Write(templates)
 }
 
 func postInitialize(w http.ResponseWriter, r *http.Request) {
