@@ -654,7 +654,11 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var categoryIDs []int
-	err = dbx.Select(&categoryIDs, "SELECT id FROM `categories` WHERE parent_id=?", rootCategory.ID)
+	for _, val := range categories {
+		if val.ParentID == rootCategory.ID {
+			categoryIDs = append(categoryIDs, val.ID)
+		}
+	}
 	if err != nil {
 		log.Print(err)
 		outputErrorMsg(w, http.StatusInternalServerError, "db error")
@@ -737,8 +741,8 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 		seller.ID = u.ID
 		seller.AccountName = u.AccountName
 		seller.NumSellItems = u.NumSellItems
-		category, err := getCategoryByID(dbx, item.CategoryID)
-		if err != nil {
+		category, ok := categories[item.CategoryID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "category not found")
 			return
 		}
