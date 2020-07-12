@@ -596,11 +596,15 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
-		seller, err := getUserSimpleByID(dbx, item.SellerID)
-		if err != nil {
+		seller := UserSimple{}
+		u, ok := users[item.SellerID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
+		seller.ID = u.ID
+		seller.AccountName = u.AccountName
+		seller.NumSellItems = u.NumSellItems
 		category, err := getCategoryByID(dbx, item.CategoryID)
 		if err != nil {
 			outputErrorMsg(w, http.StatusNotFound, "category not found")
@@ -724,11 +728,15 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
-		seller, err := getUserSimpleByID(dbx, item.SellerID)
-		if err != nil {
+		seller := UserSimple{}
+		u, ok := users[item.SellerID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
+		seller.ID = u.ID
+		seller.AccountName = u.AccountName
+		seller.NumSellItems = u.NumSellItems
 		category, err := getCategoryByID(dbx, item.CategoryID)
 		if err != nil {
 			outputErrorMsg(w, http.StatusNotFound, "category not found")
@@ -988,12 +996,16 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if item.BuyerID != 0 {
-			buyer, err := getUserSimpleByID(tx, item.BuyerID)
-			if err != nil {
+			buyer := UserSimple{}
+			u, ok := users[item.BuyerID]
+			if !ok {
 				outputErrorMsg(w, http.StatusNotFound, "buyer not found")
 				tx.Rollback()
 				return
 			}
+			buyer.ID = u.ID
+			buyer.AccountName = u.AccountName
+			buyer.NumSellItems = u.NumSellItems
 			itemDetail.BuyerID = item.BuyerID
 			itemDetail.Buyer = &buyer
 		}
@@ -1089,11 +1101,15 @@ func getItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	seller, err := getUserSimpleByID(dbx, item.SellerID)
-	if err != nil {
+	seller := UserSimple{}
+	u, ok := users[item.SellerID]
+	if !ok {
 		outputErrorMsg(w, http.StatusNotFound, "seller not found")
 		return
 	}
+	seller.ID = u.ID
+	seller.AccountName = u.AccountName
+	seller.NumSellItems = u.NumSellItems
 
 	itemDetail := ItemDetail{
 		ID:       item.ID,
@@ -1115,11 +1131,15 @@ func getItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if (user.ID == item.SellerID || user.ID == item.BuyerID) && item.BuyerID != 0 {
-		buyer, err := getUserSimpleByID(dbx, item.BuyerID)
-		if err != nil {
+		buyer := UserSimple{}
+		u, ok := users[item.BuyerID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "buyer not found")
 			return
 		}
+		buyer.ID = u.ID
+		buyer.AccountName = u.AccountName
+		buyer.NumSellItems = u.NumSellItems
 		itemDetail.BuyerID = item.BuyerID
 		itemDetail.Buyer = &buyer
 
