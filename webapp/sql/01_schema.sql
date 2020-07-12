@@ -14,7 +14,8 @@ CREATE TABLE `users` (
   `address` varchar(191) NOT NULL,
   `num_sell_items` int unsigned NOT NULL DEFAULT 0,
   `last_bump` datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   INDEX idx_account_name (`account_name`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
 
 DROP TABLE IF EXISTS `items`;
@@ -30,7 +31,8 @@ CREATE TABLE `items` (
   `category_id` int unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_category_id (`category_id`)
+  INDEX indx_index (`category_id`,`seller_id`, `buyer_id`),
+  INDEX indx_created_at (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
 
 DROP TABLE IF EXISTS `transaction_evidences`;
@@ -46,7 +48,8 @@ CREATE TABLE `transaction_evidences` (
   `item_category_id` int unsigned NOT NULL,
   `item_root_category_id` int unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_item_id (`item_id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
 
 DROP TABLE IF EXISTS `shippings`;
@@ -70,5 +73,6 @@ DROP TABLE IF EXISTS `categories`;
 CREATE TABLE `categories` (
   `id` int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `parent_id` int unsigned NOT NULL,
-  `category_name` varchar(191) NOT NULL
+  `category_name` varchar(191) NOT NULL,
+  KEY `parrent_id_idx` (`parent_id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
