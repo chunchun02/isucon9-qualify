@@ -972,6 +972,18 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	itemDetails := []ItemDetail{}
+	transactionEvidences := []TransactionEvidence{}
+	tmap := make(map[int64]TransactionEvidence)
+	_ = tx.Select(&transactionEvidences, "SELECT * FROM `transaction_evidences`")
+	for _, t := range transactionEvidences {
+		tmap[t.ItemID] = t
+	}
+	shippings := []Shipping{}
+	smap := make(map[int64]Shipping)
+	_ = tx.Select(&shippings, "SELECT * FROM `shippings`")
+	for _, t := range shippings {
+		smap[t.TransactionEvidenceID] = t
+	}
 	for _, item := range items {
 		seller := UserSimple{}
 		u, ok := users[item.SellerID]
@@ -1024,25 +1036,18 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 			itemDetail.Buyer = &buyer
 		}
 
-		transactionEvidence := TransactionEvidence{}
-		err = tx.Get(&transactionEvidence, "SELECT * FROM `transaction_evidences` WHERE `item_id` = ?", item.ID)
-		if err != nil && err != sql.ErrNoRows {
-			// It's able to ignore ErrNoRows
-			log.Print(err)
-			outputErrorMsg(w, http.StatusInternalServerError, "db error")
-			tx.Rollback()
-			return
-		}
+		transactionEvidence, _ := tmap[item.ID]
+		//if !ok {
+		//	// It's able to ignore ErrNoRows
+		//	log.Print(err)
+		//	outputErrorMsg(w, http.StatusInternalServerError, "db error")
+		//	tx.Rollback()
+		//	return
+		//}
 
 		if transactionEvidence.ID > 0 {
-			shipping := Shipping{}
-			err = tx.Get(&shipping, "SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ?", transactionEvidence.ID)
-			if err == sql.ErrNoRows {
-				outputErrorMsg(w, http.StatusNotFound, "shipping not found")
-				tx.Rollback()
-				return
-			}
-			if err != nil {
+			shipping, ok := smap[transactionEvidence.ID]
+			if !ok {
 				log.Print(err)
 				outputErrorMsg(w, http.StatusInternalServerError, "db error")
 				tx.Rollback()
