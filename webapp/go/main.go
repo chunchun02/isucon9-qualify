@@ -429,15 +429,15 @@ func getUserSimpleAll() (map[int64]User, error) {
 }
 
 func getCategoryByID(q sqlx.Queryer, categoryID int) (category Category, err error) {
-	err = sqlx.Get(q, &category, "SELECT * FROM `categories` WHERE `id` = ?", categoryID)
-	if category.ParentID != 0 {
-		parentCategory, err := getCategoryByID(q, category.ParentID)
-		if err != nil {
-			return category, err
-		}
-		category.ParentCategoryName = parentCategory.CategoryName
-	}
-	return category, err
+	//err = sqlx.Get(q, &category, "SELECT * FROM `categories` WHERE `id` = ?", categoryID)
+	//if category.ParentID != 0 {
+	//	parentCategory, err := getCategoryByID(q, category.ParentID)
+	//	if err != nil {
+	//		return category, err
+	//	}
+	//	category.ParentCategoryName = parentCategory.CategoryName
+	//}
+	return categories[categoryID], err
 }
 
 func getCategoryAll() (map[int]Category, error) {
@@ -613,11 +613,12 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 		seller.ID = u.ID
 		seller.AccountName = u.AccountName
 		seller.NumSellItems = u.NumSellItems
-		category, err := getCategoryByID(dbx, item.CategoryID)
-		if err != nil {
+		category, ok := categories[item.CategoryID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "category not found")
 			return
 		}
+
 		itemSimples = append(itemSimples, ItemSimple{
 			ID:         item.ID,
 			SellerID:   item.SellerID,
@@ -655,8 +656,8 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rootCategory, err := getCategoryByID(dbx, rootCategoryID)
-	if err != nil || rootCategory.ParentID != 0 {
+	rootCategory, ok := categories[rootCategoryID]
+	if !ok || rootCategory.ParentID != 0 {
 		outputErrorMsg(w, http.StatusNotFound, "category not found")
 		return
 	}
@@ -859,8 +860,8 @@ func getUserItems(w http.ResponseWriter, r *http.Request) {
 
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
-		category, err := getCategoryByID(dbx, item.CategoryID)
-		if err != nil {
+		category, err := categories[item.CategoryID]
+		if !err {
 			outputErrorMsg(w, http.StatusNotFound, "category not found")
 			return
 		}
