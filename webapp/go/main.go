@@ -970,17 +970,21 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	itemIDs := make([]int64, len(items))
+	for i, item := range items {
+		itemIDs[i] = item.ID
+	}
 
 	itemDetails := []ItemDetail{}
 	transactionEvidences := []TransactionEvidence{}
 	tmap := make(map[int64]TransactionEvidence)
-	_ = tx.Select(&transactionEvidences, "SELECT * FROM `transaction_evidences`")
+	_ = tx.Select(&transactionEvidences, "SELECT * FROM `transaction_evidences` WHERE item_id IN (?)", itemIDs)
 	for _, t := range transactionEvidences {
 		tmap[t.ItemID] = t
 	}
 	shippings := []Shipping{}
 	smap := make(map[int64]Shipping)
-	_ = tx.Select(&shippings, "SELECT * FROM `shippings`")
+	_ = tx.Select(&shippings, "SELECT * FROM `shippings` WHERE item_id IN (?)", itemIDs)
 	for _, t := range shippings {
 		smap[t.TransactionEvidenceID] = t
 	}
